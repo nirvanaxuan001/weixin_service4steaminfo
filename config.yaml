@@ -1,0 +1,8 @@
+name: service.py
+version: 1
+
+libraries:
+- name: webpy
+  version: "0.36"
+- name: requests
+  version: "2.10.0"
