@@ -69,7 +69,7 @@ class eventHandler:
 
 
 class txtmsgHandler:
-    MSG_HELP = u'输入SteamStore的AppID可以查询游戏国区史低价格哦，其他功能仍在开发中'
+    MSG_HELP = u'输入SteamStore的AppID可以查询游戏国区史低价格。输入游戏名字可以搜索游戏的AppID。'
     MSG_SUCCESS = [u'存储完成', u'我存好了，随时来查哦',u'搞定，收工']
 
     def __init__(self, user, reqMsg):
@@ -79,7 +79,7 @@ class txtmsgHandler:
 
     def _handle_req(self):
         if self.req in ['help', '帮助', '?', u'？']: return
-        else:
+        elif self.req.isdigit():
             url = 'http://steamdb.sinaapp.com/app/'+self.req+'/data.js?v=34'
             r=requests.get(url)
             m=re.search('{[\w\W]*}',r.text)
@@ -99,6 +99,22 @@ class txtmsgHandler:
             else:        
                 self.response = u'AppID不存在哦!'    
             return
+        else:
+            url ='https://steamdb.info/search/?a=app&q='+self.req
+            r=requests.get(url)
+            m=r.text
+            a =re.findall('<tr\sclass="app"\s+data-appid="\d+">\n<td><a\shref="/app/\d+/">\d+</a></td>\n<td>\w+</td>\n<td>[\w:_\s\d.\-]+</td>',m)
+            tmp_msg=u''
+            for ind,i in enumerate(a):
+                if ind>5:
+                    break
+                tmp =re.search('appid="\d+"',i)
+                appid =re.search('\d+',tmp.group(0)).group(0)
+                tmp = re.split('<td>|</td>',i)
+                name = tmp[-2]
+                print appid,name
+                tmp_msg = tmp_msg+ u'游戏名:'+name +'\nappid:'+appid+'\n--------------------\n'
+            self.response = tmp_msg
     def _get_success_response(self):
         import random
         return self.MSG_SUCCESS[random.randint(0,len(self.MSG_SUCCESS)-1)]
